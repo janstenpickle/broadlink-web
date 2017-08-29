@@ -1,0 +1,26 @@
+.mdl-layout__drawer.is-visible {
+  width: 300px;
+}
+
+.mdl-list__item-secondary-action {
+  margin-right: 50px;
+}
+
+.mdl-list__item:hover {
+  background-color: #e0e0e0
+}
+
+.demo-card-image.mdl-card {
+  width: 256px;
+  height: 256px;
+}
+.demo-card-image > .mdl-card__actions {
+  height: 52px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.demo-card-image__filename {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
