@@ -1,52 +1,102 @@
 import * as React from 'react';
-import { TSMap } from "typescript-map";
-import { RemoteData } from '../types/index';
+import { RemoteData, Coords, ButtonData } from '../types/index';
+import { Responsive, WidthProvider, Layout, Layouts } from 'react-grid-layout';
+import { TSMap } from 'typescript-map';
+import { renderButton } from './MainButtons'
+
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export interface Props {
-  remotes: TSMap<string, RemoteData>;
+  remotes: RemoteData[];
   focus: (remote: string) => void;
   focusedRemote: string;
+  fetchRemotes(): void;
 }
 
-function Hello({ remotes, focus, focusedRemote }: Props) {
-  const defaultCard = 'mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-grid mdl-card mdl-shadow--2dp demo-card-image mdl-color--grey-100'
+interface Derp {
+  coords: TSMap<string, RemoteData>,
+  next: Coords
+}
 
-  const remotePanes = remotes.map(function(data: RemoteData, remote: string) {
-    if (data.isActive) {
-      const cn = () => { if (remote === focusedRemote) {
-        return defaultCard + 'mdl-color--white'
-      } else {
-        return defaultCard
-      }
-    }
+export default class Hello extends React.Component<Props,{}> {
+  public componentDidMount() {
+    this.props.fetchRemotes();
+  }
 
-    const doFocus = () => {
-      focus(remote);
-    }
+  public render() {
+    const filteredRemotes = this.props.remotes.filter((data: RemoteData) => data.isActive);
 
-
+    const divs = filteredRemotes.map((data: RemoteData) => {
+      const buttons = data.buttons.map((button: ButtonData) => renderButton(button))
       return (
-        <div id={remote} onClick={doFocus} className={cn()}>
-          <div className="mdl-card__title mdl-card--expand">
-            <h4>
-            sdfsdf
-            </h4>
+        <div className='mdl-shadow--2dp mdl-color--grey-100' key={data.name}>
+          <div className='center-align'>
+            {data.name}
           </div>
-            <div className="mdl-card__actions mdl-card--border">
-              <span className="mdl-list__item-primary-content">
-                <span>{remote}</span>
-              </span>
-              </div>
+          <div className='center-align'>
+            {buttons}
+          </div>
         </div>
       )
-    } else {
-      return ""
+    });
+
+    //console.info(array.reduce((b: String, a: (string | RemoteData)[]) => b + ', ' + String(a.), '', filteredRemotes.entries()))
+
+    const nextCoords: (cols: number, coords: Coords) => Coords  = (cols: number, coords: Coords) => {
+      if (coords.x < (cols - 1)) {
+        return { x: coords.x + 1, y: coords.y}
+      } else {
+        return { x: 0, y: coords.y + 1}
+      }
+    };
+
+    const cToString = (coords: Coords) => coords.x.toString() + coords.y.toString();
+
+    const placement: (cols: number, rs: RemoteData[], selector: (data: RemoteData) => Coords|undefined, setter: (coords: Coords, data: RemoteData) => RemoteData) => RemoteData[]  = (cols: number, rs: RemoteData[], selector: (data: RemoteData) => Coords|undefined, setter: (coords: Coords, data: RemoteData) => RemoteData) =>
+     rs.reduce((a: Derp, data: RemoteData) => {
+      const coords = (selector(data) || {x: 0, y: 0})
+      if (a.coords.has(cToString(coords)) || coords.x >= (cols - 1)) {
+        const next = a.coords.keys().sort().reduce((co: Coords, s: string) => {
+          if (s === cToString(co)) {
+            return nextCoords(cols, co)
+          } else {
+            return co
+          }
+        }, a.next)
+        return { coords: a.coords.set(cToString(next), setter(next, data)), next: nextCoords(cols, next) }
+      } else {
+        return { coords: a.coords.set(cToString(coords), setter(coords, data)), next: a.next }
+      }
+
+    }, { coords: new TSMap<string, RemoteData>(), next: {x: 0, y: 0}}).coords.values()
+
+
+
+    const layout: (cols: number, selector: (data: RemoteData) => Coords|undefined, setter: (coords: Coords, data: RemoteData) => RemoteData) => Layout[] =
+      (cols: number, selector: (data: RemoteData) => Coords|undefined, setter: (coords: Coords, data: RemoteData) => RemoteData) =>
+      placement(cols, filteredRemotes, selector, setter).map((data: RemoteData) => {
+        const coords = (selector(data) || {x: 0, y: 0})
+        return { i: data.name, x: coords.x, y: coords.y, w: 1, h: 1, isResizable: false, isDraggable: false, }
+      })
+
+
+    const layouts: Layouts = {
+      lg: layout(4, (data: RemoteData) => data.lg, (coords: Coords, data: RemoteData) => { data.lg = coords; return data }),
+      md: layout(3, (data: RemoteData) => data.md, (coords: Coords, data: RemoteData) => { data.md = coords; return data }),
+      sm: layout(2, (data: RemoteData) => data.sm, (coords: Coords, data: RemoteData) => { data.sm = coords; return data }),
+      xs: layout(2, (data: RemoteData) => data.xs, (coords: Coords, data: RemoteData) => { data.xs = coords; return data }),
+      xxs: layout(1, (data: RemoteData) => data.xxs, (coords: Coords, data: RemoteData) => { data.xxs = coords; return data }),
     }
-  })
 
-  return (
-    <div className="page-content mdl-grid">{remotePanes}</div>
-  );
+    const cols = {lg: 4, md: 3, sm: 2, xs: 2, xxs: 1}
+
+    const layoutChange: (layout: Layout, layouts: Layouts) => void = (layout: Layout, layouts: Layouts) =>
+      console.log(layouts)
+
+    return (
+      <ResponsiveReactGridLayout className='layout' rowHeight={250} cols={cols} layouts={layouts} containerPadding={[5, 5]} compactType='vertical' onLayoutChange={layoutChange}>
+      {divs}
+      </ResponsiveReactGridLayout>
+    );
+  }
 }
-
-export default Hello;

@@ -1,0 +1,2 @@
+recursive-include broadlinkweb/templates *
+recursive-include broadlinkweb/static *
