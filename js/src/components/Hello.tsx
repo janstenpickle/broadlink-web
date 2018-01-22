@@ -68,16 +68,14 @@ export default class Hello extends React.Component<Props,{}> {
         return { coords: a.coords.set(cToString(coords), setter(coords, data)), next: a.next }
       }
 
-    }, { coords: new TSMap<string, RemoteData>(), next: {x: 0, y: 0}}).coords.values()
-
-
+    }, { coords: new TSMap<string, RemoteData>(), next: {x: 0, y: 0}}).coords.values();
 
     const layout: (cols: number, selector: (data: RemoteData) => Coords|undefined, setter: (coords: Coords, data: RemoteData) => RemoteData) => Layout[] =
       (cols: number, selector: (data: RemoteData) => Coords|undefined, setter: (coords: Coords, data: RemoteData) => RemoteData) =>
       placement(cols, filteredRemotes, selector, setter).map((data: RemoteData) => {
         const coords = (selector(data) || {x: 0, y: 0})
         return { i: data.name, x: coords.x, y: coords.y, w: 1, h: 1, isResizable: false, isDraggable: false, }
-      })
+      });
 
 
     const layouts: Layouts = {
@@ -86,12 +84,12 @@ export default class Hello extends React.Component<Props,{}> {
       sm: layout(2, (data: RemoteData) => data.sm, (coords: Coords, data: RemoteData) => { data.sm = coords; return data }),
       xs: layout(2, (data: RemoteData) => data.xs, (coords: Coords, data: RemoteData) => { data.xs = coords; return data }),
       xxs: layout(1, (data: RemoteData) => data.xxs, (coords: Coords, data: RemoteData) => { data.xxs = coords; return data }),
-    }
+    };
 
-    const cols = {lg: 4, md: 3, sm: 2, xs: 2, xxs: 1}
+    const cols = {lg: 4, md: 3, sm: 2, xs: 2, xxs: 1};
 
     const layoutChange: (layout: Layout, layouts: Layouts) => void = (layout: Layout, layouts: Layouts) =>
-      console.log(layouts)
+      console.log(layouts);
 
     return (
       <ResponsiveReactGridLayout className='layout' rowHeight={250} cols={cols} layouts={layouts} containerPadding={[5, 5]} compactType='vertical' onLayoutChange={layoutChange}>

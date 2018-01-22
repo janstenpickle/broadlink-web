@@ -1,6 +1,6 @@
 import { ButtonData } from '../../types/index';
 
-const baseURL = 'http://192.168.1.103:5000';
+const baseURL = `${location.protocol}//${location.hostname}:8000`;
 
 export function fetchButtonsAsync(endpoint: string): Promise<ButtonData[]> {
   const buttonsUrl = `${baseURL}/config/${endpoint}`;

@@ -35,7 +35,7 @@ export function renderButton(buttonData: ButtonData) {
   }
 
   const callRest = () => {
-    fetch('http://192.168.1.103:5000/' + mode() + '/' + buttonData.name)
+    fetch(`${location.protocol}//${location.hostname}:8000/` + mode() + '/' + buttonData.name)
   }
 
   const content = () => {
